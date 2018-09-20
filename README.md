@@ -11,12 +11,14 @@ None yet.
 ## Motivation
 Transformation between ECMAScript values and JSON text is lossy.
 This is most obvious in the case of deserializing numbers (e.g., `"999999999999999999"`, `"999999999999999999.0"`, and `"1000000000000000000"` all parse to `1000000000000000000`), but also comes up when attempting to round-tripping non-primitive values such as Date objects (e.g., `JSON.parse(JSON.stringify(new Date("2018-09-25T14:00:00Z")))` yields a string `"2018-09-25T14:00:00.000Z"`).
+
 Neither of these examples is hypothetical—serializing a [BigInt](https://github.com/tc39/proposal-bigint) as JSON is specified to throw an exception because there is no output that would round-trip through `JSON.parse`, and a similar concept has been raised regarding the [Temporal proposal](https://github.com/tc39/proposal-temporal).
+
 `JSON.parse` accepts a reviver function capable of processing inbound values, but it is invoked bottom-up and receives so little context (a _key_, an already-lossy _value_, and a receiver upon which _key_ is an own property with value _value_) that it is practically useless.
 The authors intend to remedy that.
 
 ## Proposed Solution
-Update `JSON.parse` to provide reviver functions with more arguments, primarily the source text from which a value was derived (inclusive of punctuation but exclusive of insignificant whitespace).
+Update `JSON.parse` to provide reviver functions with more arguments, primarily the source text from which a value was derived (inclusive of punctuation but exclusive of leading/trailing insignificant whitespace).
 
 ## Illustrative examples
 ```js
