@@ -8,7 +8,8 @@ A proposal for extending `JSON.parse` behavior to grant reviver functions access
 This proposal is at stage 1 of [the TC39 Process](https://tc39.github.io/process-document/).
 
 ## Champions
-None yet.
+* Richard Gibson
+* Mathias Bynens
 
 ## Motivation
 Transformation between ECMAScript values and JSON text is lossy.
