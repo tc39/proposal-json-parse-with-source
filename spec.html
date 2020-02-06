@@ -1,0 +1,81 @@
+<!doctype html>
+<meta charset="utf8">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/github.min.css">
+<pre class="metadata">
+title: JSON.parse source text access
+status: proposal
+stage: 1
+shortname: &lt;a href="https://github.com/tc39/proposal-json-parse-with-source"&gt;proposal-json-parse-with-source&lt;/a&gt;
+contributors: Richard Gibson
+</pre>
+<emu-biblio href="./missing-productions.json"></emu-biblio>
+
+
+<emu-clause id="sec-json.parse">
+  <h1>JSON.parse ( _text_ [ , _reviver_ ] )</h1>
+  <p>The `parse` function parses a JSON text (a JSON-formatted String) and produces an ECMAScript value. The JSON format represents literals, arrays, and objects with a syntax similar to the syntax for ECMAScript literals, Array Initializers, and Object Initializers. After parsing, JSON objects are realized as ECMAScript objects. JSON arrays are realized as ECMAScript Array instances. JSON strings, numbers, booleans, and null are realized as ECMAScript Strings, Numbers, Booleans, and *null*.</p>
+  <p>The optional _reviver_ parameter is a function that takes <del>two</del><ins>three</ins> parameters, _key_ and _value_ <ins>and a _context_ object</ins>. It can filter and transform the results. It is called with each of the _key_/_value_ pairs produced by the parse <ins>and details of their corresponding Parse Node</ins>, and its return value is used instead of the original value. If it returns what it received, the structure is not modified. If it returns *undefined* then the property is deleted from the result.</p>
+  <emu-alg>
+    1. Let _JText_ be ? ToString(_text_).
+    1. <del>Parse</del><ins>Let _parseNode_ be the Parse Node at the root of the parse tree resulting from parsing</ins> _JText_ interpreted as UTF-16 encoded Unicode points (<emu-xref href="#sec-ecmascript-language-types-string-type"></emu-xref>) as a JSON text as specified in ECMA-404. Throw a *SyntaxError* exception if _JText_ is not a valid JSON text as defined in that specification.
+    1. Let _scriptText_ be the string-concatenation of *"("*, _JText_, and *");"*.
+    1. Let _completion_ be the result of parsing and evaluating _scriptText_ as if it was the source text of an ECMAScript |Script|. The extended PropertyDefinitionEvaluation semantics defined in <emu-xref href="#sec-__proto__-property-names-in-object-initializers"></emu-xref> must not be used during the evaluation.
+    1. Let _unfiltered_ be _completion_.[[Value]].
+    1. Assert: _unfiltered_ is either a String, Number, Boolean, Null, or an Object that is defined by either an |ArrayLiteral| or an |ObjectLiteral|.
+    1. If IsCallable(_reviver_) is *true*, then
+      1. Let _root_ be ObjectCreate(%Object.prototype%).
+      1. Let _rootName_ be the empty String.
+      1. Perform ! CreateDataPropertyOrThrow(_root_, _rootName_, _unfiltered_).
+      1. Return ? InternalizeJSONProperty(_root_, _rootName_<ins>, _reviver_, _parseNode_</ins>).
+    1. Else,
+      1. Return _unfiltered_.
+  </emu-alg>
+  <p>This function is the <dfn>%JSONParse%</dfn> intrinsic object.</p>
+  <p>The *"length"* property of the `parse` function is 2.</p>
+  <emu-note>
+    <p>Valid JSON text is a subset of the ECMAScript |PrimaryExpression| syntax as modified by Step 4 above. Step 2 verifies that _JText_ conforms to that subset, and step 6 verifies that that parsing and evaluation returns a value of an appropriate type.</p>
+  </emu-note>
+
+  <emu-clause id="sec-internalizejsonproperty" aoid="InternalizeJSONProperty">
+    <h1>Runtime Semantics: InternalizeJSONProperty ( _holder_, _name_<ins>, _reviver_, _parseNode_</ins> )</h1>
+    <p>The abstract operation InternalizeJSONProperty is a recursive abstract operation that takes <del>two</del><ins>four</ins> parameters: a _holder_ object <del>and</del><ins>,</ins> the String _name_ of a property in that object<ins>, a _reviver_ function, and a _parseNode_ Parse Node corresponding with the original value of the property</ins>. <del>InternalizeJSONProperty uses the value of _reviver_ that was originally passed to the above parse function.</del></p>
+    <emu-note>
+      <p>This algorithm intentionally does not throw an exception if either [[Delete]] or CreateDataProperty return *false*.</p>
+    </emu-note>
+    <emu-alg>
+      1. <ins>Let _context_ be ! ObjectCreate(%ObjectPrototype%).</ins>
+      1. <ins>Let _sourceText_  be the span of source text matched by _parseNode_.</ins>
+      1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, ! UTF16Encode(_sourceText_)).</ins>
+      1. Let _val_ be ? Get(_holder_, _name_).
+      1. If Type(_val_) is Object, then
+        1. Let _isArray_ be ? IsArray(_val_).
+        1. If _isArray_ is *true*, then
+          1. Let _I_ be 0.
+          1. Let _len_ be ? LengthOfArrayLike(_val_).
+          1. Repeat, while _I_ &lt; _len_,
+            1. <ins>Let _child_ be the |AssignmentExpression| descendant of _parseNode_ corresponding with the element of _val_ at index _I_.</ins>
+            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, ! ToString(_I_)<ins>, _reviver_, _child_</ins>).
+            1. If _newElement_ is *undefined*, then
+              1. Perform ? _val_.[[Delete]](! ToString(_I_)).
+            1. Else,
+              1. Perform ? CreateDataProperty(_val_, ! ToString(_I_), _newElement_).
+              1. NOTE: This algorithm intentionally does not throw an exception if CreateDataProperty returns *false*.
+            1. Set _I_ to _I_ + 1.
+        1. Else,
+          1. Let _keys_ be ? EnumerableOwnPropertyNames(_val_, ~key~).
+          1. For each String _P_ in _keys_, do
+            1. <ins>Let _child_ be the |AssignmentExpression| descendant of _parseNode_ responsible for the value of the property of _val_ with name _P_.</ins>
+            1. <ins>NOTE: In the case of JSON text specifying multiple name/value pairs with the same name for a single object (such as <code>{"a":"lost","a":"kept"}</code>), the value for the corresponding property of the resulting ECMAScript object is specified by the last pair with that name.</ins>
+            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_<ins>, _reviver_, _child_</ins>).
+            1. If _newElement_ is *undefined*, then
+              1. Perform ? _val_.[[Delete]](_P_).
+            1. Else,
+              1. Perform ? CreateDataProperty(_val_, _P_, _newElement_).
+      1. Return ? Call(_reviver_, _holder_, &laquo; _name_, _val_<ins>, _context_</ins> &raquo;).
+    </emu-alg>
+    <p>It is not permitted for a conforming implementation of `JSON.parse` to extend the JSON grammars. If an implementation wishes to support a modified or extended JSON interchange format it must do so by defining a different parse function.</p>
+    <emu-note>
+      <p>In the case where there are duplicate name Strings within an object, lexically preceding values for the same key shall be overwritten.</p>
+    </emu-note>
+  </emu-clause>
+</emu-clause>
