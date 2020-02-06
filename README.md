@@ -21,31 +21,31 @@ Neither of these examples is hypothetical—serializing a [BigInt](https://githu
 The authors intend to remedy that.
 
 ## Proposed Solution
-Update `JSON.parse` to provide reviver functions with more arguments, primarily the source text from which a value was derived (inclusive of punctuation but exclusive of leading/trailing insignificant whitespace).
+Update `JSON.parse` to provide reviver functions with more arguments, primarily conveying the source text from which a value was derived (inclusive of punctuation but exclusive of leading/trailing insignificant whitespace).
 
 ## Illustrative examples
 ```js
 const tooBigForNumber = BigInt(Number.MAX_SAFE_INTEGER) + 2n;
-const intToBigInt = (key, val, src) => typeof val === "number" && val % 1 === 0 ? BigInt(src) : val;
+const intToBigInt = (key, val, {source}) => typeof val === "number" && val % 1 === 0 ? BigInt(source) : val;
 const roundTripped = JSON.parse(String(tooBigForNumber), intToBigInt);
 tooBigForNumber === roundTripped;
 // → true
 ```
 
 ### Potential enhancements
-#### Add position and input arguments like String.prototype.replace
-`String.prototype.replace` passes position and input arguments to replacer functions; `JSON.parse` could behave similarly.
+#### Expose position and input information
+`String.prototype.replace` passes position and input arguments to replacer functions and the return value from `RegExp.prototype.exec` has "index" and "input" properties; `JSON.parse` could behave similarly.
 ```js
 const input = '\n\t"use\\u0020strict"';
 let spied;
-const parsed = JSON.parse(input, (key, val, src, pos, str) => (spied = {src, pos, str}, val));
+const parsed = JSON.parse(input, (key, val, context) => (spied = context, val));
 parsed === 'use strict';
 // → true
-spied.src === '"use\\u0020strict"';
+spied.source === '"use\\u0020strict"';
 // → true
-spied.pos === 2;
+spied.index === 2;
 // → true
-spied.str === input;
+spied.input === input;
 // → true
 
 ```
@@ -56,7 +56,7 @@ A reviver function sees values bottom-up, but the data structure hierarchy is al
 const input = '{ "foo": [{ "bar": "baz" }] }';
 const expectedKeys = ['foo', 0, 'bar'];
 let spiedKeys;
-JSON.parse(input, (key, val, src, keys) => (spiedKeys = spiedKeys || keys, val));
+JSON.parse(input, (key, val, {keys}) => (spiedKeys = spiedKeys || keys, val));
 expectedKeys.length === spiedKeys.length;
 // → true
 expectedKeys.every((key, i) => spiedKeys[i] === key);
