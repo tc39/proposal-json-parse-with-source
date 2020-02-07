@@ -1,0 +1,10 @@
+{
+  "https://tc39.github.io/ecma262/": [
+    {
+      "type": "term",
+      "term": "Parse Node",
+	  "refId":"sec-syntactic-grammar",
+      "key": "Parse Node"
+    }
+  ]
+}
