@@ -5,7 +5,7 @@ A proposal for extending `JSON.parse` behavior to grant reviver functions access
 [2018 September slides](https://docs.google.com/presentation/d/1PB0HCOxWZikFmTAqR5U2ZZjEiDV7NjhPN_-SK5NNG0w/edit?usp=sharing)
 
 ## Status
-This proposal is at stage 1 of [the TC39 Process](https://tc39.github.io/process-document/).
+This proposal is at stage 2 of [the TC39 Process](https://tc39.github.io/process-document/).
 
 ## Champions
 * Richard Gibson
