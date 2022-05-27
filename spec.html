@@ -44,7 +44,7 @@ contributors: Richard Gibson
         _holder_: an Object,
         _name_: a String,
         _reviver_: a function object,
-        <ins>_parseNode_: a Parse Node,</ins>
+        <ins>_valNode_: a Parse Node,</ins>
       ): either a normal completion containing an ECMAScript language value or an abrupt completion
     </h1>
     <dl class="header">
@@ -54,30 +54,43 @@ contributors: Richard Gibson
     </emu-note>
     <p>It performs the following steps when called:</p>
     <emu-alg>
+      1. <ins>Let _typedValNode_ be ShallowestContained of _valNode_ with argument &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.</ins>
+      1. <ins>Assert: _typedValNode_ is not ~empty~.</ins>
       1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
-      1. <ins>Let _sourceText_ be the source text matched by _parseNode_.</ins>
+      1. <ins>Let _sourceText_ be the source text matched by _typedValNode_.</ins>
       1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, CodePointsToString(_sourceText_)).</ins>
       1. Let _val_ be ? Get(_holder_, _name_).
       1. If Type(_val_) is Object, then
         1. Let _isArray_ be ? IsArray(_val_).
         1. If _isArray_ is *true*, then
+          1. <ins>Assert: _typedValNode_ is an |ArrayLiteral| Parse Node.</ins>
+          1. <ins>Let _elements_ be ArrayElementList of _typedValNode_.</ins>
+          1. <ins>Let _elementsLen_ be the number of elements in _elements_.</ins>
           1. Let _I_ be 0.
           1. Let _len_ be ? LengthOfArrayLike(_val_).
+          1. <ins>Assert: _len_ = _elementsLen_.</ins>
           1. Repeat, while _I_ &lt; _len_,
             1. Let _prop_ be ! ToString(𝔽(_I_)).
-            1. <ins>Let _child_ be the |AssignmentExpression| descendant of _parseNode_ corresponding with the element of _val_ at index _I_.</ins>
-            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _prop_, _reviver_<ins>, _child_</ins>).
+            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _prop_, _reviver_<ins>, _elements_[_I_]</ins>).
             1. If _newElement_ is *undefined*, then
               1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_prop_).
             1. Else,
               1. Perform ? CreateDataProperty(_val_, _prop_, _newElement_).
             1. Set _I_ to _I_ + 1.
         1. Else,
+          1. <ins>Assert: _typedValNode_ is an |ObjectLiteral| Parse Node.</ins>
+          1. <ins>Let _properties_ be PropertyDefinitionList of _typedValNode_.</ins>
           1. Let _keys_ be ? EnumerableOwnPropertyNames(_val_, ~key~).
           1. For each String _P_ of _keys_, do
-            1. <ins>Let _child_ be the |AssignmentExpression| descendant of _parseNode_ responsible for the value of the property of _val_ with name _P_.</ins>
+            1. <ins>Let _propertyDefinition_ be ~empty~.</ins>
+            1. <ins>For each Parse Node _candidate_ of _properties_, do</ins>
+              1. <ins>Let _propName_ be PropName of _candidate_.</ins>
+              1. <ins>If SameValue(_propName_, _P_) is *true*, set _propertyDefinition_ to _candidate_.</ins>
+            1. <ins>Assert: _propertyDefinition_ is not ~empty~.</ins>
             1. <ins>NOTE: In the case of JSON text specifying multiple name/value pairs with the same name for a single object (such as <code>{"a":"lost","a":"kept"}</code>), the value for the corresponding property of the resulting ECMAScript object is specified by the last pair with that name.</ins>
-            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_<ins>, _reviver_, _child_</ins>).
+            1. <ins>Assert: _propertyDefinition_ is <emu-grammar>PropertyDefinition : PropertyName `:` AssignmentExpression</emu-grammar>.</ins>
+            1. <ins>Let _value_ be the |AssignmentExpression| of _propertyDefinition_.</ins>
+            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_, _reviver_<ins>, _value_</ins>).
             1. If _newElement_ is *undefined*, then
               1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_P_).
             1. Else,
@@ -90,3 +103,114 @@ contributors: Richard Gibson
     </emu-note>
   </emu-clause>
 </emu-clause>
+
+<ins class="block">
+  <emu-clause id="sec-static-semantics-firstcontained" type="sdo">
+    <h1>
+      Static Semantics: ShallowestContained (
+        _types_: a List of nonterminals from any of the ECMAScript grammars,
+      ): a Parse Node or ~empty~
+    </h1>
+    <dl class="header">
+      <dt>description</dt>
+      <dd>It performs a breadth-first search of the parse tree rooted at the context node, and returns the first node that is an instance of one of the provided nonterminals, or ~empty~ if there is no such node.</dd>
+    </dl>
+    <emu-alg>
+      1. Let _queue_ be &laquo; this Parse Node &raquo;.
+      1. Repeat, while _queue_ is not empty,
+        1. Let _candidate_ be the first element of _queue_.
+        1. Remove the first element from _queue_.
+        1. Set _queuedMore_ to *false*.
+        1. For each nonterminal _type_ of _types_, do
+          1. If _candidate_ is an instance of _type_, return _candidate_.
+          1. If _queuedMore_ is *false* and _candidate_ is an instance of a nonterminal and _candidate_ Contains _type_ is *true*, then
+            1. Let _children_ be a List containing each child node of _candidate_, in order.
+            1. Set _queue_ to the list-concatenation of _queue_ and _children_.
+            1. Set _queuedMore_ to *true*.
+      1. Return ~empty~.
+    </emu-alg>
+    <emu-note type="editor">
+      <p>
+        It probably makes sense to define Contains in terms of this operation rather than vice versa, but Contains is currently limited to a single target nonterminal.
+      </p>
+    </emu-note>
+  </emu-clause>
+</ins>
+
+<ins class="block">
+  <emu-clause id="sec-static-semantics-arrayelementlist" type="sdo">
+    <h1>
+      Static Semantics: ArrayElementList (
+      ): a List of Parse Nodes
+    </h1>
+    <dl class="header">
+    </dl>
+
+    <emu-grammar>
+      ArrayLiteral :
+        `[` Elision? `]`
+        `[` ElementList `]`
+        `[` ElementList `,` Elision? `]`
+    </emu-grammar>
+    <emu-alg>
+      1. Set _elements_ to a new empty List.
+      1. If |ElementList| is present, set _elements_ to the list-concatenation of _elements_ and ArrayElementList of |ElementList|.
+      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. Return _elements_.
+    </emu-alg>
+
+    <emu-grammar>ElementList : Elision? AssignmentExpression</emu-grammar>
+    <emu-alg>
+      1. Set _elements_ to a new empty List.
+      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. Return the list-concatenation of _elements_ and &laquo; |AssignmentExpression| &raquo;.
+    </emu-alg>
+
+    <emu-grammar>ElementList : Elision? SpreadElement</emu-grammar>
+    <emu-alg>
+      1. Set _elements_ to a new empty List.
+      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. Return the list-concatenation of _elements_ and &laquo; |SpreadElement| &raquo;.
+    </emu-alg>
+
+    <emu-grammar>ElementList : ElementList `,` Elision? AssignmentExpression</emu-grammar>
+    <emu-alg>
+      1. Set _elements_ to ArrayElementList of |ElementList|.
+      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. Return the list-concatenation of _elements_ and &laquo; |AssignmentExpression| &raquo;.
+    </emu-alg>
+
+    <emu-grammar>ElementList : ElementList `,` Elision? SpreadElement</emu-grammar>
+    <emu-alg>
+      1. Set _elements_ to ArrayElementList of |ElementList|.
+      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. Return the list-concatenation of _elements_ and &laquo; |SpreadElement| &raquo;.
+    </emu-alg>
+  </emu-clause>
+</ins>
+
+<ins class="block">
+  <emu-clause id="sec-static-semantics-propertydefinitionlist" type="sdo">
+    <h1>
+      Static Semantics: PropertyDefinitionList (
+      ): a List of Parse Nodes
+    </h1>
+    <dl class="header">
+    </dl>
+
+    <emu-grammar>ObjectLiteral : `{` `}`</emu-grammar>
+    <emu-alg>
+      1. Return a new empty List.
+    </emu-alg>
+
+    <emu-grammar>PropertyDefinitionList : PropertyDefinition</emu-grammar>
+    <emu-alg>
+      1. Return &laquo; |PropertyDefinition| &raquo;.
+    </emu-alg>
+
+    <emu-grammar>PropertyDefinitionList : PropertyDefinitionList `,` PropertyDefinition</emu-grammar>
+    <emu-alg>
+      1. Return the list-concatenation of PropertyDefinitionList of |PropertyDefinitionList| and &laquo; |PropertyDefinition| &raquo;.
+    </emu-alg>
+  </emu-clause>
+</ins>
