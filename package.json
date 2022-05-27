@@ -4,12 +4,13 @@
   "version": "0.1.0",
   "description": "proposal-intl-segmenter proposal",
   "devDependencies": {
-    "ecmarkup": "^3.17.0"
+    "@tc39/ecma262-biblio": "2.0.2322",
+    "ecmarkup": "^12.1.0"
   },
   "scripts": {
     "clean": "rm -rf docs",
     "prebuild": "npm run clean && mkdir docs",
-    "build": "ecmarkup spec.html docs/index.html"
+    "build": "ecmarkup --lint-spec --strict --load-biblio @tc39/ecma262-biblio spec.html docs/index.html"
   },
   "repository": "tc39/proposal-json-parse-with-source",
   "author": "ECMA TC39",
