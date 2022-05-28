@@ -18,7 +18,7 @@ This is most obvious in the case of deserializing numbers (e.g., `"9999999999999
 Neither of these examples is hypothetical—serializing a [BigInt](https://github.com/tc39/proposal-bigint) as JSON is specified to throw an exception because there is no output that would round-trip through `JSON.parse`, and a similar concept has been raised regarding the [Temporal proposal](https://github.com/tc39/proposal-temporal).
 
 `JSON.parse` accepts a reviver function capable of processing inbound values, but it is invoked bottom-up and receives so little context (a _key_, an already-lossy _value_, and a receiver upon which _key_ is an own property with value _value_) that it is practically useless.
-The authors intend to remedy that.
+We intend to remedy that.
 
 ## Proposed Solution
 Update `JSON.parse` to provide reviver functions with more arguments, primarily conveying the source text from which a value was derived (inclusive of punctuation but exclusive of leading/trailing insignificant whitespace).
@@ -80,7 +80,7 @@ All input to `JSON.parse` that is currently rejected will continue to be, all in
 ### Modified values
 Reviver functions are intended to modify or remove values in the output, but those changes should have no effect on the source-derived arguments passed to them.
 Because reviver functions are invoked bottom-up, this means that values may not correlate with source text.
-The authors consider this to be acceptable, but moot (see the following point).
+We consider this to be acceptable, but moot (see the following point).
 
 ### Non-primitive values
 Per https://github.com/tc39/proposal-json-parse-with-source/issues/10#issuecomment-704441802 , source text exposure is limited to primitive values.
