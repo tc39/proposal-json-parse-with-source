@@ -9,98 +9,191 @@ shortname: &lt;a href="https://github.com/tc39/proposal-json-parse-with-source"&
 contributors: Richard Gibson
 </pre>
 
-<emu-clause id="sec-json.parse">
-  <h1>JSON.parse ( _text_ [ , _reviver_ ] )</h1>
-  <p>The `parse` function parses a JSON text (a JSON-formatted String) and produces an ECMAScript language value. The JSON format represents literals, arrays, and objects with a syntax similar to the syntax for ECMAScript literals, Array Initializers, and Object Initializers. After parsing, JSON objects are realized as ECMAScript objects. JSON arrays are realized as ECMAScript Array instances. JSON strings, numbers, booleans, and null are realized as ECMAScript Strings, Numbers, Booleans, and *null*.</p>
-  <p>The optional _reviver_ parameter is a function that takes <del>two</del><ins>three</ins> parameters, _key_ and _value_ <ins>and a _context_ object</ins>. It can filter and transform the results. It is called with each of the _key_/_value_ pairs produced by the parse <ins>and details of their corresponding Parse Node</ins>, and its return value is used instead of the original value. If it returns what it received, the structure is not modified. If it returns *undefined* then the property is deleted from the result.</p>
-  <emu-alg>
-    1. Let _jsonString_ be ? ToString(_text_).
-    1. [id="step-json-parse-validate"] Parse StringToCodePoints(_jsonString_) as a JSON text as specified in ECMA-404. Throw a *SyntaxError* exception if it is not a valid JSON text as defined in that specification.
-    1. Let _scriptString_ be the string-concatenation of *"("*, _jsonString_, and *");"*.
-    1. [id="step-json-parse-parse"] Let _script_ be ParseText(StringToCodePoints(_scriptString_), |Script|).
-    1. NOTE: The early error rules defined in <emu-xref href="#sec-object-initializer-static-semantics-early-errors"></emu-xref> have special handling for the above invocation of ParseText.
-    1. Assert: _script_ is a Parse Node.
-    1. [id="step-json-parse-eval"] Let _completion_ be the result of <emu-meta suppress-effects="user-code">evaluating _script_</emu-meta>.
-    1. NOTE: The PropertyDefinitionEvaluation semantics defined in <emu-xref href="#sec-runtime-semantics-propertydefinitionevaluation"></emu-xref> have special handling for the above evaluation.
-    1. Let _unfiltered_ be _completion_.[[Value]].
-    1. [id="step-json-parse-assert-type"] Assert: _unfiltered_ is either a String, Number, Boolean, Null, or an Object that is defined by either an |ArrayLiteral| or an |ObjectLiteral|.
-    1. If IsCallable(_reviver_) is *true*, then
-      1. Let _root_ be OrdinaryObjectCreate(%Object.prototype%).
-      1. Let _rootName_ be the empty String.
-      1. Perform ! CreateDataPropertyOrThrow(_root_, _rootName_, _unfiltered_).
-      1. Return ? InternalizeJSONProperty(_root_, _rootName_, _reviver_<ins>, _script_</ins>).
-    1. Else,
-      1. Return _unfiltered_.
-  </emu-alg>
-  <p>The *"length"* property of the `parse` function is *2*<sub>𝔽</sub>.</p>
-  <emu-note>
-    <p>Valid JSON text is a subset of the ECMAScript |PrimaryExpression| syntax. Step <emu-xref href="#step-json-parse-validate"></emu-xref> verifies that _jsonString_ conforms to that subset, and step <emu-xref href="#step-json-parse-assert-type"></emu-xref> asserts that that parsing and evaluation returns a value of an appropriate type.</p>
-    <p>However, because <emu-xref href="#sec-runtime-semantics-propertydefinitionevaluation"></emu-xref> behaves differently during `JSON.parse`, the same source text can produce different results when evaluated as a |PrimaryExpression| rather than as JSON. Furthermore, the Early Error for duplicate *"__proto__"* properties in object literals, which likewise does not apply during `JSON.parse`, means that not all texts accepted by `JSON.parse` are valid as a |PrimaryExpression|, despite matching the grammar.</p>
-  </emu-note>
+<emu-clause id="sec-json-object">
+  <h1>The JSON Object</h1>
+  <p>The JSON object:</p>
+  <ul>
+    <li>is <dfn>%JSON%</dfn>.</li>
+    <li>is the initial value of the *"JSON"* property of the global object.</li>
+    <li>is an ordinary object.</li>
+    <li>contains <del>two functions, `parse` and `stringify`,</del><ins>functions</ins> that are used to parse and construct JSON texts.</li>
+    <li>has a [[Prototype]] internal slot whose value is %Object.prototype%.</li>
+    <li>does not have a [[Construct]] internal method; it cannot be used as a constructor with the `new` operator.</li>
+    <li>does not have a [[Call]] internal method; it cannot be invoked as a function.</li>
+  </ul>
+  <p>The JSON Data Interchange Format is defined in ECMA-404. The JSON interchange format used in this specification is exactly that described by ECMA-404. Conforming implementations of `JSON.parse` and `JSON.stringify` must support the exact interchange format described in the ECMA-404 specification without any deletions or extensions to the format.</p>
 
-  <emu-clause id="sec-internalizejsonproperty" type="abstract operation">
-    <h1>
-      InternalizeJSONProperty (
-        _holder_: an Object,
-        _name_: a String,
-        _reviver_: a function object,
-        <ins>_valNode_: a Parse Node,</ins>
-      ): either a normal completion containing an ECMAScript language value or an abrupt completion
-    </h1>
-    <dl class="header">
-    </dl>
-    <emu-note>
-      <p>This algorithm intentionally does not throw an exception if either [[Delete]] or CreateDataProperty return *false*.</p>
-    </emu-note>
-    <p>It performs the following steps when called:</p>
+  <ins class="block">
+    <emu-clause id="sec-json.israwjson">
+      <h1>JSON.isRawJSON ( _O_ )</h1>
+      <p>This function performs the following steps when called:</p>
+      <emu-alg>
+        1. If Type(_O_) is Object and _O_ has an [[IsRawJSON]] internal slot, return *true*.
+        1. Return *false*.
+      </emu-alg>
+    </emu-clause>
+  </ins>
+
+  <emu-clause id="sec-json.parse">
+    <h1>JSON.parse ( _text_ [ , _reviver_ ] )</h1>
+    <p>The `parse` function parses a JSON text (a JSON-formatted String) and produces an ECMAScript language value. The JSON format represents literals, arrays, and objects with a syntax similar to the syntax for ECMAScript literals, Array Initializers, and Object Initializers. After parsing, JSON objects are realized as ECMAScript objects. JSON arrays are realized as ECMAScript Array instances. JSON strings, numbers, booleans, and null are realized as ECMAScript Strings, Numbers, Booleans, and *null*.</p>
+    <p>The optional _reviver_ parameter is a function that takes <del>two</del><ins>three</ins> parameters, _key_ and _value_ <ins>and a _context_ object</ins>. It can filter and transform the results. It is called with each of the _key_/_value_ pairs produced by the parse <ins>and details of their corresponding Parse Node</ins>, and its return value is used instead of the original value. If it returns what it received, the structure is not modified. If it returns *undefined* then the property is deleted from the result.</p>
     <emu-alg>
-      1. <ins>Let _typedValNode_ be ShallowestContained of _valNode_ with argument &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.</ins>
-      1. <ins>Assert: _typedValNode_ is not ~empty~.</ins>
-      1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
-      1. <ins>Let _sourceText_ be the source text matched by _typedValNode_.</ins>
-      1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, CodePointsToString(_sourceText_)).</ins>
-      1. Let _val_ be ? Get(_holder_, _name_).
-      1. If Type(_val_) is Object, then
-        1. Let _isArray_ be ? IsArray(_val_).
-        1. If _isArray_ is *true*, then
-          1. <ins>Assert: _typedValNode_ is an |ArrayLiteral| Parse Node.</ins>
-          1. <ins>Let _elements_ be ArrayElementList of _typedValNode_.</ins>
-          1. <ins>Let _elementsLen_ be the number of elements in _elements_.</ins>
-          1. Let _I_ be 0.
-          1. Let _len_ be ? LengthOfArrayLike(_val_).
-          1. <ins>Assert: _len_ = _elementsLen_.</ins>
-          1. Repeat, while _I_ &lt; _len_,
-            1. Let _prop_ be ! ToString(𝔽(_I_)).
-            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _prop_, _reviver_<ins>, _elements_[_I_]</ins>).
-            1. If _newElement_ is *undefined*, then
-              1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_prop_).
-            1. Else,
-              1. Perform ? CreateDataProperty(_val_, _prop_, _newElement_).
-            1. Set _I_ to _I_ + 1.
-        1. Else,
-          1. <ins>Assert: _typedValNode_ is an |ObjectLiteral| Parse Node.</ins>
-          1. <ins>Let _properties_ be PropertyDefinitionList of _typedValNode_.</ins>
-          1. Let _keys_ be ? EnumerableOwnPropertyNames(_val_, ~key~).
-          1. For each String _P_ of _keys_, do
-            1. <ins>Let _propertyDefinition_ be ~empty~.</ins>
-            1. <ins>For each Parse Node _candidate_ of _properties_, do</ins>
-              1. <ins>Let _propName_ be PropName of _candidate_.</ins>
-              1. <ins>If SameValue(_propName_, _P_) is *true*, set _propertyDefinition_ to _candidate_.</ins>
-            1. <ins>Assert: _propertyDefinition_ is not ~empty~.</ins>
-            1. <ins>NOTE: In the case of JSON text specifying multiple name/value pairs with the same name for a single object (such as <code>{"a":"lost","a":"kept"}</code>), the value for the corresponding property of the resulting ECMAScript object is specified by the last pair with that name.</ins>
-            1. <ins>Assert: _propertyDefinition_ is <emu-grammar>PropertyDefinition : PropertyName `:` AssignmentExpression</emu-grammar>.</ins>
-            1. <ins>Let _value_ be the |AssignmentExpression| of _propertyDefinition_.</ins>
-            1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_, _reviver_<ins>, _value_</ins>).
-            1. If _newElement_ is *undefined*, then
-              1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_P_).
-            1. Else,
-              1. Perform ? CreateDataProperty(_val_, _P_, _newElement_).
-      1. Return ? Call(_reviver_, _holder_, &laquo; _name_, _val_<ins>, _context_</ins> &raquo;).
+      1. Let _jsonString_ be ? ToString(_text_).
+      1. [id="step-json-parse-validate"] Parse StringToCodePoints(_jsonString_) as a JSON text as specified in ECMA-404. Throw a *SyntaxError* exception if it is not a valid JSON text as defined in that specification.
+      1. Let _scriptString_ be the string-concatenation of *"("*, _jsonString_, and *");"*.
+      1. [id="step-json-parse-parse"] Let _script_ be ParseText(StringToCodePoints(_scriptString_), |Script|).
+      1. NOTE: The early error rules defined in <emu-xref href="#sec-object-initializer-static-semantics-early-errors"></emu-xref> have special handling for the above invocation of ParseText.
+      1. Assert: _script_ is a Parse Node.
+      1. [id="step-json-parse-eval"] Let _completion_ be the result of <emu-meta suppress-effects="user-code">evaluating _script_</emu-meta>.
+      1. NOTE: The PropertyDefinitionEvaluation semantics defined in <emu-xref href="#sec-runtime-semantics-propertydefinitionevaluation"></emu-xref> have special handling for the above evaluation.
+      1. Let _unfiltered_ be _completion_.[[Value]].
+      1. [id="step-json-parse-assert-type"] Assert: _unfiltered_ is either a String, Number, Boolean, Null, or an Object that is defined by either an |ArrayLiteral| or an |ObjectLiteral|.
+      1. If IsCallable(_reviver_) is *true*, then
+        1. Let _root_ be OrdinaryObjectCreate(%Object.prototype%).
+        1. Let _rootName_ be the empty String.
+        1. Perform ! CreateDataPropertyOrThrow(_root_, _rootName_, _unfiltered_).
+        1. Return ? InternalizeJSONProperty(_root_, _rootName_, _reviver_<ins>, _script_</ins>).
+      1. Else,
+        1. Return _unfiltered_.
     </emu-alg>
-    <p>It is not permitted for a conforming implementation of `JSON.parse` to extend the JSON grammars. If an implementation wishes to support a modified or extended JSON interchange format it must do so by defining a different parse function.</p>
+    <p>The *"length"* property of the `parse` function is *2*<sub>𝔽</sub>.</p>
     <emu-note>
-      <p>In the case where there are duplicate name Strings within an object, lexically preceding values for the same key shall be overwritten.</p>
+      <p>Valid JSON text is a subset of the ECMAScript |PrimaryExpression| syntax. Step <emu-xref href="#step-json-parse-validate"></emu-xref> verifies that _jsonString_ conforms to that subset, and step <emu-xref href="#step-json-parse-assert-type"></emu-xref> asserts that that parsing and evaluation returns a value of an appropriate type.</p>
+      <p>However, because <emu-xref href="#sec-runtime-semantics-propertydefinitionevaluation"></emu-xref> behaves differently during `JSON.parse`, the same source text can produce different results when evaluated as a |PrimaryExpression| rather than as JSON. Furthermore, the Early Error for duplicate *"__proto__"* properties in object literals, which likewise does not apply during `JSON.parse`, means that not all texts accepted by `JSON.parse` are valid as a |PrimaryExpression|, despite matching the grammar.</p>
     </emu-note>
+
+    <emu-clause id="sec-internalizejsonproperty" type="abstract operation">
+      <h1>
+        InternalizeJSONProperty (
+          _holder_: an Object,
+          _name_: a String,
+          _reviver_: a function object,
+          <ins>_valNode_: a Parse Node,</ins>
+        ): either a normal completion containing an ECMAScript language value or an abrupt completion
+      </h1>
+      <dl class="header">
+      </dl>
+      <emu-note>
+        <p>This algorithm intentionally does not throw an exception if either [[Delete]] or CreateDataProperty return *false*.</p>
+      </emu-note>
+      <p>It performs the following steps when called:</p>
+      <emu-alg>
+        1. <ins>Let _typedValNode_ be ShallowestContained of _valNode_ with argument &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.</ins>
+        1. <ins>Assert: _typedValNode_ is not ~empty~.</ins>
+        1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
+        1. <ins>Let _sourceText_ be the source text matched by _typedValNode_.</ins>
+        1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, CodePointsToString(_sourceText_)).</ins>
+        1. Let _val_ be ? Get(_holder_, _name_).
+        1. If Type(_val_) is Object, then
+          1. Let _isArray_ be ? IsArray(_val_).
+          1. If _isArray_ is *true*, then
+            1. <ins>Assert: _typedValNode_ is an |ArrayLiteral| Parse Node.</ins>
+            1. <ins>Let _elements_ be ArrayElementList of _typedValNode_.</ins>
+            1. <ins>Let _elementsLen_ be the number of elements in _elements_.</ins>
+            1. Let _I_ be 0.
+            1. Let _len_ be ? LengthOfArrayLike(_val_).
+            1. <ins>Assert: _len_ = _elementsLen_.</ins>
+            1. Repeat, while _I_ &lt; _len_,
+              1. Let _prop_ be ! ToString(𝔽(_I_)).
+              1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _prop_, _reviver_<ins>, _elements_[_I_]</ins>).
+              1. If _newElement_ is *undefined*, then
+                1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_prop_).
+              1. Else,
+                1. Perform ? CreateDataProperty(_val_, _prop_, _newElement_).
+              1. Set _I_ to _I_ + 1.
+          1. Else,
+            1. <ins>Assert: _typedValNode_ is an |ObjectLiteral| Parse Node.</ins>
+            1. <ins>Let _properties_ be PropertyDefinitionList of _typedValNode_.</ins>
+            1. Let _keys_ be ? EnumerableOwnPropertyNames(_val_, ~key~).
+            1. For each String _P_ of _keys_, do
+              1. <ins>Let _propertyDefinition_ be ~empty~.</ins>
+              1. <ins>For each Parse Node _candidate_ of _properties_, do</ins>
+                1. <ins>Let _propName_ be PropName of _candidate_.</ins>
+                1. <ins>If SameValue(_propName_, _P_) is *true*, set _propertyDefinition_ to _candidate_.</ins>
+              1. <ins>Assert: _propertyDefinition_ is not ~empty~.</ins>
+              1. <ins>NOTE: In the case of JSON text specifying multiple name/value pairs with the same name for a single object (such as <code>{"a":"lost","a":"kept"}</code>), the value for the corresponding property of the resulting ECMAScript object is specified by the last pair with that name.</ins>
+              1. <ins>Assert: _propertyDefinition_ is <emu-grammar>PropertyDefinition : PropertyName `:` AssignmentExpression</emu-grammar>.</ins>
+              1. <ins>Let _value_ be the |AssignmentExpression| of _propertyDefinition_.</ins>
+              1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_, _reviver_<ins>, _value_</ins>).
+              1. If _newElement_ is *undefined*, then
+                1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_P_).
+              1. Else,
+                1. Perform ? CreateDataProperty(_val_, _P_, _newElement_).
+        1. Return ? Call(_reviver_, _holder_, &laquo; _name_, _val_<ins>, _context_</ins> &raquo;).
+      </emu-alg>
+      <p>It is not permitted for a conforming implementation of `JSON.parse` to extend the JSON grammars. If an implementation wishes to support a modified or extended JSON interchange format it must do so by defining a different parse function.</p>
+      <emu-note>
+        <p>In the case where there are duplicate name Strings within an object, lexically preceding values for the same key shall be overwritten.</p>
+      </emu-note>
+    </emu-clause>
+  </emu-clause>
+
+  <ins class="block">
+    <emu-clause id="sec-json.rawjson">
+      <h1>JSON.rawJSON ( _text_ )</h1>
+      <p>The `rawJSON` function returns an object representing raw JSON text of a string, number, boolean, or null value.</p>
+      <emu-alg>
+        1. Let _jsonString_ be ? ToString(_text_).
+        1. Throw a *SyntaxError* exception if _jsonString_ is the empty String, or if either the first or last code unit of _jsonString_ is any of 0x0009 (CHARACTER TABULATION), 0x000A (LINE FEED), 0x000D (CARRIAGE RETURN), or 0x0020 (SPACE).
+        1. Parse StringToCodePoints(_jsonString_) as a JSON text as specified in ECMA-404. Throw a *SyntaxError* exception if it is not a valid JSON text as defined in that specification, or if its outermost <code>value</code> is an <code>object</code> or <code>array</code> as defined in that specification.
+        1. Let _internalSlotsList_ be &laquo; [[IsRawJSON]] &raquo;.
+        1. Let _obj_ be OrdinaryObjectCreate(*null*, _internalSlotsList_).
+        1. Perform ! CreateDataPropertyOrThrow(_obj_, *"rawJSON"*, _jsonString_).
+        1. Perform ! SetIntegrityLevel(_obj_, ~frozen~).
+        1. Return _obj_.
+      </emu-alg>
+    </emu-clause>
+  </ins>
+
+  <emu-clause id="sec-json.stringify">
+    <h1>JSON.stringify ( _value_ [ , _replacer_ [ , _space_ ] ] )</h1>
+    <p>The `stringify` function returns a String in UTF-16 encoded JSON format representing an ECMAScript language value, or *undefined*. It can take three parameters. The _value_ parameter is an ECMAScript language value, which is usually an object or array, although it can also be a String, Boolean, Number or *null*. The optional _replacer_ parameter is either a function that alters the way objects and arrays are stringified, or an array of Strings and Numbers that acts as an inclusion list for selecting the object properties that will be stringified. The optional _space_ parameter is a String or Number that allows the result to have white space injected into it to improve human readability.</p>
+
+    <emu-clause id="sec-serializejsonproperty" type="abstract operation">
+      <h1>
+        SerializeJSONProperty (
+          _state_: unknown,
+          _key_: unknown,
+          _holder_: unknown,
+        ): either a normal completion containing either *undefined* or a String, or an abrupt completion
+      </h1>
+      <dl class="header">
+      </dl>
+      <emu-alg>
+        1. Let _value_ be ? Get(_holder_, _key_).
+        1. If Type(_value_) is Object or BigInt, then
+          1. Let _toJSON_ be ? GetV(_value_, *"toJSON"*).
+          1. If IsCallable(_toJSON_) is *true*, then
+            1. Set _value_ to ? Call(_toJSON_, _value_, &laquo; _key_ &raquo;).
+        1. If _state_.[[ReplacerFunction]] is not *undefined*, then
+          1. Set _value_ to ? Call(_state_.[[ReplacerFunction]], _holder_, &laquo; _key_, _value_ &raquo;).
+        1. If Type(_value_) is Object, then
+          1. <ins>If _value_ has an [[IsRawJSON]] internal slot, then</ins>
+            1. <ins>Return ! Get(_value_, *"rawJSON"*).</ins>
+          1. If _value_ has a [[NumberData]] internal slot, then
+            1. Set _value_ to ? ToNumber(_value_).
+          1. Else if _value_ has a [[StringData]] internal slot, then
+            1. Set _value_ to ? ToString(_value_).
+          1. Else if _value_ has a [[BooleanData]] internal slot, then
+            1. Set _value_ to _value_.[[BooleanData]].
+          1. Else if _value_ has a [[BigIntData]] internal slot, then
+            1. Set _value_ to _value_.[[BigIntData]].
+        1. If _value_ is *null*, return *"null"*.
+        1. If _value_ is *true*, return *"true"*.
+        1. If _value_ is *false*, return *"false"*.
+        1. If Type(_value_) is String, return QuoteJSONString(_value_).
+        1. If Type(_value_) is Number, then
+          1. If _value_ is finite, return ! ToString(_value_).
+          1. Return *"null"*.
+        1. If Type(_value_) is BigInt, throw a *TypeError* exception.
+        1. If Type(_value_) is Object and IsCallable(_value_) is *false*, then
+          1. Let _isArray_ be ? IsArray(_value_).
+          1. If _isArray_ is *true*, return ? SerializeJSONArray(_state_, _value_).
+          1. Return ? SerializeJSONObject(_state_, _value_).
+        1. Return *undefined*.
+      </emu-alg>
+    </emu-clause>
   </emu-clause>
 </emu-clause>
 
