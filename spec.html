@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
   <emu-clause id="sec-json.parse">
     <h1>JSON.parse ( _text_ [ , _reviver_ ] )</h1>
     <p>The `parse` function parses a JSON text (a JSON-formatted String) and produces an ECMAScript language value. The JSON format represents literals, arrays, and objects with a syntax similar to the syntax for ECMAScript literals, Array Initializers, and Object Initializers. After parsing, JSON objects are realized as ECMAScript objects. JSON arrays are realized as ECMAScript Array instances. JSON strings, numbers, booleans, and null are realized as ECMAScript Strings, Numbers, Booleans, and *null*.</p>
-    <p>The optional _reviver_ parameter is a function that takes <del>two</del><ins>three</ins> parameters, _key_ and _value_ <ins>and a _context_ object</ins>. It can filter and transform the results. It is called with each of the _key_/_value_ pairs produced by the parse <ins>and details of their corresponding Parse Node</ins>, and its return value is used instead of the original value. If it returns what it received, the structure is not modified. If it returns *undefined* then the property is deleted from the result.</p>
+    <p>The optional _reviver_ parameter is a function that takes <del>two</del><ins>three</ins> parameters, _key_ and _value_ <ins>and a _context_ object</ins>. It can filter and transform the results. It is called with each of the _key_/_value_ pairs produced by the parse <ins>and (for primitive values) details of their corresponding Parse Node</ins>, and its return value is used instead of the original value. If it returns what it received, the structure is not modified. If it returns *undefined* then the property is deleted from the result.</p>
     <emu-alg>
       1. Let _jsonString_ be ? ToString(_text_).
       1. [id="step-json-parse-validate"] Parse StringToCodePoints(_jsonString_) as a JSON text as specified in ECMA-404. Throw a *SyntaxError* exception if it is not a valid JSON text as defined in that specification.
@@ -90,8 +90,9 @@ document.addEventListener("DOMContentLoaded", function() {
         1. <ins>Let _typedValNode_ be ShallowestContained of _valNode_ with argument &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.</ins>
         1. <ins>Assert: _typedValNode_ is not ~empty~.</ins>
         1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
-        1. <ins>Let _sourceText_ be the source text matched by _typedValNode_.</ins>
-        1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, CodePointsToString(_sourceText_)).</ins>
+        1. <ins>If _typedValNode_ is not an |ArrayLiteral| Parse Node and not an |ObjectLiteral| Parse Node, then</ins>
+          1. <ins>Let _sourceText_ be the source text matched by _typedValNode_.</ins>
+          1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, CodePointsToString(_sourceText_)).</ins>
         1. Let _val_ be ? Get(_holder_, _name_).
         1. If Type(_val_) is Object, then
           1. Let _isArray_ be ? IsArray(_val_).
