@@ -1,6 +1,6 @@
 # JSON.parse source text access
 
-A proposal for extending `JSON.parse` behavior to grant reviver functions access to the input source text.
+A proposal for extending `JSON.parse` behavior to grant reviver functions access to the input source text and extending `JSON.stringify` behavior to support object placeholders for raw JSON text primitives.
 
 [2018 September slides](https://docs.google.com/presentation/d/1PB0HCOxWZikFmTAqR5U2ZZjEiDV7NjhPN_-SK5NNG0w/edit?usp=sharing)
 
@@ -23,12 +23,20 @@ The authors intend to remedy that.
 ## Proposed Solution
 Update `JSON.parse` to provide reviver functions with more arguments, primarily conveying the source text from which a value was derived (inclusive of punctuation but exclusive of leading/trailing insignificant whitespace).
 
+## Serialization 
+Although originally not included in this proposal, support for non-lossy serialization with `JSON.stringify` (and thus also complete round-trippability) was requested and added (cf. [#12](https://github.com/tc39/proposal-json-parse-with-source/issues/12)), currently using special "raw JSON" frozen objects constructible with `JSON.rawJSON` but possibly subject to change (cf. [#18](https://github.com/tc39/proposal-json-parse-with-source/issues/18) and [#19](https://github.com/tc39/proposal-json-parse-with-source/issues/19)).
+
 ## Illustrative examples
 ```js
 const tooBigForNumber = BigInt(Number.MAX_SAFE_INTEGER) + 2n;
 const intToBigInt = (key, val, {source}) => typeof val === "number" && val % 1 === 0 ? BigInt(source) : val;
 const roundTripped = JSON.parse(String(tooBigForNumber), intToBigInt);
 tooBigForNumber === roundTripped;
+// → true
+
+const bigIntToRawJSON = (key, val) => typeof val === "bigint" ? JSON.rawJSON(val) : val;
+const embedded = JSON.stringify({ tooBigForNumber }, bigIntToRawJSON);
+embedded === '{"tooBigForNumber":9007199254740993}';
 // → true
 ```
 
@@ -73,7 +81,3 @@ All input to `JSON.parse` that is currently rejected will continue to be, all in
 Reviver functions are intended to modify or remove values in the output, but those changes should have no effect on the source-derived arguments passed to them.
 Because reviver functions are invoked bottom-up, this means that values may not correlate with source text.
 The authors consider this to be acceptable.
-
-## Specification
-Not defined yet, and to be honest doing so may be difficult.
-Help will be graciously accepted.
