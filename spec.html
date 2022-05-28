@@ -8,6 +8,14 @@ stage: 2
 shortname: &lt;a href="https://github.com/tc39/proposal-json-parse-with-source"&gt;proposal-json-parse-with-source&lt;/a&gt;
 contributors: Richard Gibson
 </pre>
+<script>
+// There aren't many headings, so just expand them all by default.
+document.addEventListener("DOMContentLoaded", function() {
+  try {
+    document.querySelectorAll("#menu-toc li").forEach(el => el.click());
+  } catch (ex) {}
+});
+</script>
 
 <emu-clause id="sec-json-object">
   <h1>The JSON Object</h1>
