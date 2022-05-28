@@ -2,7 +2,9 @@
 
 A proposal for extending `JSON.parse` behavior to grant reviver functions access to the input source text and extending `JSON.stringify` behavior to support object placeholders for raw JSON text primitives.
 
-[2018 September slides](https://docs.google.com/presentation/d/1PB0HCOxWZikFmTAqR5U2ZZjEiDV7NjhPN_-SK5NNG0w/edit?usp=sharing)
+[2022 June slides](https://docs.google.com/presentation/d/1C2RLbE-SS8ldlQPfXgsvKJBrEIZb4s57pOn-LxBNaC0/)
+
+[original 2018 September slides](https://docs.google.com/presentation/d/1PB0HCOxWZikFmTAqR5U2ZZjEiDV7NjhPN_-SK5NNG0w/edit?usp=sharing)
 
 ## Status
 This proposal is at stage 2 of [the TC39 Process](https://tc39.github.io/process-document/).
