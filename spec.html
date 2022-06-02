@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", function() {
         1. <ins>Let _typedValNode_ be ShallowestContained of _valNode_ with argument &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.</ins>
         1. <ins>Assert: _typedValNode_ is not ~empty~.</ins>
         1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
-        1. <ins>If _typedValNode_ is not an |ArrayLiteral| Parse Node nor an |ObjectLiteral| Parse Node, then</ins>
+        1. <ins>If _typedValNode_ is not an |ArrayLiteral| Parse Node and not an |ObjectLiteral| Parse Node, then</ins>
           1. <ins>Let _sourceText_ be the source text matched by _typedValNode_.</ins>
           1. <ins>Perform ! CreateDataPropertyOrThrow(_context_, *"source"*, CodePointsToString(_sourceText_)).</ins>
         1. Let _val_ be ? Get(_holder_, _name_).
