@@ -222,13 +222,13 @@ document.addEventListener("DOMContentLoaded", function() {
       1. Repeat, while _queue_ is not empty,
         1. Let _candidate_ be the first element of _queue_.
         1. Remove the first element from _queue_.
-        1. Set _queuedMore_ to *false*.
+        1. Set _queuedChildren_ to *false*.
         1. For each nonterminal _type_ of _types_, do
           1. If _candidate_ is an instance of _type_, return _candidate_.
-          1. If _queuedMore_ is *false* and _candidate_ is an instance of a nonterminal and _candidate_ Contains _type_ is *true*, then
+          1. If _queuedChildren_ is *false* and _candidate_ is an instance of a nonterminal and _candidate_ Contains _type_ is *true*, then
             1. Let _children_ be a List containing each child node of _candidate_, in order.
             1. Set _queue_ to the list-concatenation of _queue_ and _children_.
-            1. Set _queuedMore_ to *true*.
+            1. Set _queuedChildren_ to *true*.
       1. Return ~empty~.
     </emu-alg>
     <emu-note type="editor">
