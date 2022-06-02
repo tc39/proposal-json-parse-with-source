@@ -257,35 +257,35 @@ document.addEventListener("DOMContentLoaded", function() {
     <emu-alg>
       1. Set _elements_ to a new empty List.
       1. If |ElementList| is present, set _elements_ to the list-concatenation of _elements_ and ArrayElementList of |ElementList|.
-      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. If |Elision| is present, append |Elision| to _elements_.
       1. Return _elements_.
     </emu-alg>
 
     <emu-grammar>ElementList : Elision? AssignmentExpression</emu-grammar>
     <emu-alg>
       1. Set _elements_ to a new empty List.
-      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. If |Elision| is present, append |Elision| to _elements_.
       1. Return the list-concatenation of _elements_ and &laquo; |AssignmentExpression| &raquo;.
     </emu-alg>
 
     <emu-grammar>ElementList : Elision? SpreadElement</emu-grammar>
     <emu-alg>
       1. Set _elements_ to a new empty List.
-      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. If |Elision| is present, append |Elision| to _elements_.
       1. Return the list-concatenation of _elements_ and &laquo; |SpreadElement| &raquo;.
     </emu-alg>
 
     <emu-grammar>ElementList : ElementList `,` Elision? AssignmentExpression</emu-grammar>
     <emu-alg>
       1. Set _elements_ to ArrayElementList of |ElementList|.
-      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. If |Elision| is present, append |Elision| to _elements_.
       1. Return the list-concatenation of _elements_ and &laquo; |AssignmentExpression| &raquo;.
     </emu-alg>
 
     <emu-grammar>ElementList : ElementList `,` Elision? SpreadElement</emu-grammar>
     <emu-alg>
       1. Set _elements_ to ArrayElementList of |ElementList|.
-      1. If |Elision| is present, set _elements_ to the list-concatenation of _elements_ and &laquo; |Elision| &raquo;.
+      1. If |Elision| is present, append |Elision| to _elements_.
       1. Return the list-concatenation of _elements_ and &laquo; |SpreadElement| &raquo;.
     </emu-alg>
   </emu-clause>
