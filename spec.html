@@ -136,6 +136,40 @@ document.addEventListener("DOMContentLoaded", function() {
         <p>In the case where there are duplicate name Strings within an object, lexically preceding values for the same key shall be overwritten.</p>
       </emu-note>
     </emu-clause>
+
+    <ins class="block">
+      <emu-clause id="sec-static-semantics-shallowestcontainedjsonvalue" type="sdo">
+        <h1>
+          Static Semantics: ShallowestContainedJSONValue ( ): a Parse Node or ~empty~
+        </h1>
+        <dl class="header">
+          <dt>description</dt>
+          <dd>It performs a breadth-first search of the parse tree rooted at the context node, and returns the first node that is an instance of a nonterminal corresponding to a JSON value, or ~empty~ if there is no such node.</dd>
+        </dl>
+        <emu-alg>
+          1. Let _F_ be the Function of the running execution context.
+          1. Assert: _F_ is a `JSON.parse` built-in function object (see <emu-xref href="#sec-json.parse">JSON.parse</emu-xref>).
+          1. Let _types_ be &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.
+          1. Let _queue_ be &laquo; this Parse Node &raquo;.
+          1. Repeat, while _queue_ is not empty,
+            1. Let _candidate_ be the first element of _queue_.
+            1. Remove the first element from _queue_.
+            1. Set _queuedChildren_ to *false*.
+            1. For each nonterminal _type_ of _types_, do
+              1. If _candidate_ is an instance of _type_, return _candidate_.
+              1. If _queuedChildren_ is *false* and _candidate_ is an instance of a nonterminal and _candidate_ Contains _type_ is *true*, then
+                1. Let _children_ be a List containing each child node of _candidate_, in order.
+                1. Set _queue_ to the list-concatenation of _queue_ and _children_.
+                1. Set _queuedChildren_ to *true*.
+          1. Return ~empty~.
+        </emu-alg>
+        <emu-note type="editor">
+          <p>
+            It may make sense to generalize this operation and define Contains in terms of it rather than vice versa, but Contains is currently limited to a single target nonterminal and has specialized treatment for e.g. |ClassTail| descending into |ClassBody| exclusively to inspect computed names.
+          </p>
+        </emu-note>
+      </emu-clause>
+    </ins>
   </emu-clause>
 
   <ins class="block">
@@ -205,40 +239,6 @@ document.addEventListener("DOMContentLoaded", function() {
     </emu-clause>
   </emu-clause>
 </emu-clause>
-
-<ins class="block">
-  <emu-clause id="sec-static-semantics-shallowestcontainedjsonvalue" type="sdo">
-    <h1>
-      Static Semantics: ShallowestContainedJSONValue ( ): a Parse Node or ~empty~
-    </h1>
-    <dl class="header">
-      <dt>description</dt>
-      <dd>It performs a breadth-first search of the parse tree rooted at the context node, and returns the first node that is an instance of a nonterminal corresponding to a JSON value, or ~empty~ if there is no such node.</dd>
-    </dl>
-    <emu-alg>
-      1. Let _F_ be the Function of the running execution context.
-      1. Assert: _F_ is a `JSON.parse` built-in function object (see <emu-xref href="#sec-json.parse">JSON.parse</emu-xref>).
-      1. Let _types_ be &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.
-      1. Let _queue_ be &laquo; this Parse Node &raquo;.
-      1. Repeat, while _queue_ is not empty,
-        1. Let _candidate_ be the first element of _queue_.
-        1. Remove the first element from _queue_.
-        1. Set _queuedChildren_ to *false*.
-        1. For each nonterminal _type_ of _types_, do
-          1. If _candidate_ is an instance of _type_, return _candidate_.
-          1. If _queuedChildren_ is *false* and _candidate_ is an instance of a nonterminal and _candidate_ Contains _type_ is *true*, then
-            1. Let _children_ be a List containing each child node of _candidate_, in order.
-            1. Set _queue_ to the list-concatenation of _queue_ and _children_.
-            1. Set _queuedChildren_ to *true*.
-      1. Return ~empty~.
-    </emu-alg>
-    <emu-note type="editor">
-      <p>
-        It may make sense to generalize this operation and define Contains in terms of it rather than vice versa, but Contains is currently limited to a single target nonterminal and has specialized treatment for e.g. |ClassTail| descending into |ClassBody| exclusively to inspect computed names.
-      </p>
-    </emu-note>
-  </emu-clause>
-</ins>
 
 <ins class="block">
   <emu-clause id="sec-static-semantics-arrayliteralcontentnodes" type="sdo">
