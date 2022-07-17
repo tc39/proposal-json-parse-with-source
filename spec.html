@@ -87,7 +87,7 @@ document.addEventListener("DOMContentLoaded", function() {
       </emu-note>
       <p>It performs the following steps when called:</p>
       <emu-alg>
-        1. <ins>Let _typedValNode_ be ShallowestContained of _valNode_ with argument &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.</ins>
+        1. <ins>Let _typedValNode_ be ShallowestContainedJSONValue of _valNode_.</ins>
         1. <ins>Assert: _typedValNode_ is not ~empty~.</ins>
         1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
         1. <ins>If _typedValNode_ is not an |ArrayLiteral| Parse Node and not an |ObjectLiteral| Parse Node, then</ins>
@@ -207,17 +207,18 @@ document.addEventListener("DOMContentLoaded", function() {
 </emu-clause>
 
 <ins class="block">
-  <emu-clause id="sec-static-semantics-firstcontained" type="sdo">
+  <emu-clause id="sec-static-semantics-shallowestcontainedjsonvalue" type="sdo">
     <h1>
-      Static Semantics: ShallowestContained (
-        _types_: a List of nonterminals from any of the ECMAScript grammars,
-      ): a Parse Node or ~empty~
+      Static Semantics: ShallowestContainedJSONValue ( ): a Parse Node or ~empty~
     </h1>
     <dl class="header">
       <dt>description</dt>
-      <dd>It performs a breadth-first search of the parse tree rooted at the context node, and returns the first node that is an instance of one of the provided nonterminals, or ~empty~ if there is no such node.</dd>
+      <dd>It performs a breadth-first search of the parse tree rooted at the context node, and returns the first node that is an instance of a nonterminal corresponding to a JSON value, or ~empty~ if there is no such node.</dd>
     </dl>
     <emu-alg>
+      1. Let _F_ be the Function of the running execution context.
+      1. Assert: _F_ is a `JSON.parse` built-in function object (see <emu-xref href="#sec-json.parse">JSON.parse</emu-xref>).
+      1. Let _types_ be &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.
       1. Let _queue_ be &laquo; this Parse Node &raquo;.
       1. Repeat, while _queue_ is not empty,
         1. Let _candidate_ be the first element of _queue_.
@@ -233,7 +234,7 @@ document.addEventListener("DOMContentLoaded", function() {
     </emu-alg>
     <emu-note type="editor">
       <p>
-        It probably makes sense to define Contains in terms of this operation rather than vice versa, but Contains is currently limited to a single target nonterminal.
+        It may make sense to generalize this operation and define Contains in terms of it rather than vice versa, but Contains is currently limited to a single target nonterminal and has specialized treatment for e.g. |ClassTail| descending into |ClassBody| exclusively to inspect computed names.
       </p>
     </emu-note>
   </emu-clause>
