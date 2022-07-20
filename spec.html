@@ -123,8 +123,8 @@ document.addEventListener("DOMContentLoaded", function() {
               1. <ins>Assert: _propertyDefinition_ is not ~empty~.</ins>
               1. <ins>NOTE: In the case of JSON text specifying multiple name/value pairs with the same name for a single object (such as <code>{"a":"lost","a":"kept"}</code>), the value for the corresponding property of the resulting ECMAScript object is specified by the last pair with that name.</ins>
               1. <ins>Assert: _propertyDefinition_ is <emu-grammar>PropertyDefinition : PropertyName `:` AssignmentExpression</emu-grammar>.</ins>
-              1. <ins>Let _value_ be the |AssignmentExpression| of _propertyDefinition_.</ins>
-              1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_, _reviver_<ins>, _value_</ins>).
+              1. <ins>Let _propertyValueNode_ be the |AssignmentExpression| of _propertyDefinition_.</ins>
+              1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_, _reviver_<ins>, _propertyValueNode_</ins>).
               1. If _newElement_ is *undefined*, then
                 1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_P_).
               1. Else,
