@@ -147,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function() {
           <dd>It performs a breadth-first search of the parse tree rooted at the context node, and returns the first node that is an instance of a nonterminal corresponding to a JSON value, or ~empty~ if there is no such node.</dd>
         </dl>
         <emu-alg>
-          1. Let _F_ be the Function of the running execution context.
+          1. Let _F_ be the active function object.
           1. Assert: _F_ is a `JSON.parse` built-in function object (see <emu-xref href="#sec-json.parse">JSON.parse</emu-xref>).
           1. Let _types_ be &laquo; |NullLiteral|, |BooleanLiteral|, |NumericLiteral|, |StringLiteral|, |ArrayLiteral|, |ObjectLiteral| &raquo;.
           1. Let _queue_ be &laquo; this Parse Node &raquo;.
