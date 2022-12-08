@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "description": "proposal-intl-segmenter proposal",
   "devDependencies": {
-    "@tc39/ecma262-biblio": "2.0.2322",
-    "ecmarkup": "^12.1.0"
+    "@tc39/ecma262-biblio": "2.1.2481",
+    "ecmarkup": "^15.0.4"
   },
   "scripts": {
     "clean": "rm -rf docs",
