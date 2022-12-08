@@ -12,7 +12,10 @@ contributors: Richard Gibson
 // There aren't many headings, so just expand them all by default.
 document.addEventListener("DOMContentLoaded", function() {
   try {
-    document.querySelectorAll("#menu-toc li").forEach(el => el.click());
+    const menuItems = Array.from(document.querySelectorAll("#menu-toc li"));
+    if (!menuItems.some(el => el.classList.has("active"))) {
+      menuItems.forEach(el => el.classList.add("active"));
+    }
   } catch (ex) {}
 });
 </script>
