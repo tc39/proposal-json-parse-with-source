@@ -89,7 +89,7 @@ All input to `JSON.parse` that is currently rejected will continue to be, all in
 ### Modified values
 Reviver functions are intended to modify or remove values in the output, but those changes should have no effect on the source-derived arguments passed to them.
 Because reviver functions are invoked bottom-up, this means that values may not correlate with source text.
-We consider this to be acceptable, but moot (see the following point).
+We consider this to be acceptable, but mostly moot (see the following point). Where _not_ moot (such as when not-yet-visited array indexes or object entries are modified), source text is suppressed.
 
 ### Non-primitive values
 Per https://github.com/tc39/proposal-json-parse-with-source/issues/10#issuecomment-704441802 , source text exposure is limited to primitive values.
