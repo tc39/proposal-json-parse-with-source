@@ -1,6 +1,10 @@
 name: Deploy spec
 
-on: [push]
+on:
+  push:
+    branches:
+    - main
+    - master
 
 jobs:
   build:
