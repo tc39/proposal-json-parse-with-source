@@ -8,17 +8,33 @@ stage: 3
 shortname: &lt;a href="https://github.com/tc39/proposal-json-parse-with-source"&gt;proposal-json-parse-with-source&lt;/a&gt;
 contributors: Richard Gibson
 </pre>
-<script>
-// There aren't many headings, so just expand them all by default.
+<code title="work around https://github.com/tc39/ecmarkup/issues/510"><script>
+// Initialize to a reasonable amount of TOC expansion:
+// * Expand any full nesting level up to an arbitrary limit of 20 total visible items.
+// * Expand any *single-item* level while under that limit (even if that pushes over it).
 document.addEventListener("DOMContentLoaded", function() {
-  try {
-    const menuItems = Array.from(document.querySelectorAll("#menu-toc li"));
-    if (!menuItems.some(el => el.classList.has("active"))) {
-      menuItems.forEach(el => el.classList.add("active"));
+  // Limit to initialization by bailing out if any parent item is already expanded.
+  const tocItems = Array.from(document.querySelectorAll("#menu-toc li"));
+  if (tocItems.some(li => li.classList.contains("active") && li.querySelector("li"))) {
+    return;
+  }
+
+  const selfAndSiblings = maybeEl => Array.from(maybeEl?.parentNode.children ?? []);
+  let currentLevelItems = selfAndSiblings(tocItems[0]);
+  let availableCount = 20 - currentLevelItems.length;
+  while (availableCount > 0 && currentLevelItems.length) {
+    const nextLevelItems = currentLevelItems.flatMap(li => selfAndSiblings(li.querySelector("li")));
+    availableCount -= nextLevelItems.length;
+    if (availableCount > 0 || currentLevelItems.length === 1) {
+      // Expand [current-level] parent items of the next level.
+      for (const ol of new Set(nextLevelItems.map(li => li.parentNode))) {
+        ol.closest("li").classList.add("active");
+      }
     }
-  } catch (ex) {}
+    currentLevelItems = nextLevelItems;
+  }
 });
-</script>
+</script></code>
 
 <emu-clause id="sec-json-object">
   <h1>The JSON Object</h1>
