@@ -1,9 +1,9 @@
-name: Deploy spec
+name: Render spec
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  job:
     runs-on: ubuntu-latest
 
     steps:
@@ -13,7 +13,7 @@ jobs:
         node-version: '12.x'
     - run: npm install
     - run: npm run build
-    - name: commit changes (if on main repo primary branch)
+    - name: Commit changes to main repository
       if: github.event.repository.fork == false && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' )
       uses: elstudio/actions-js-build/commit@v3
       with:
