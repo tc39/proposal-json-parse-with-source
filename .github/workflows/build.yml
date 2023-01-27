@@ -1,10 +1,6 @@
 name: Deploy spec
 
-on:
-  push:
-    branches:
-    - main
-    - master
+on: [push]
 
 jobs:
   build:
@@ -17,7 +13,8 @@ jobs:
         node-version: '12.x'
     - run: npm install
     - run: npm run build
-    - name: commit changes
+    - name: commit changes (if on main repo primary branch)
+      if: github.event.repository.fork == false && ( github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' )
       uses: elstudio/actions-js-build/commit@v3
       with:
         commitMessage: "fixup: [spec] `npm run build`"
