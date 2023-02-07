@@ -166,7 +166,7 @@ document.addEventListener("DOMContentLoaded", function() {
             1. Else,
               1. Assert: _typedValNode_ is an |ObjectLiteral| Parse Node.
               1. Let _properties_ be PropertyDefinitionList of _typedValNode_.
-              1. NOTE: Because _val_ was produced from JSON text and has not been modified, all of its properties are enumerable and all of its property keys are Strings.
+              1. NOTE: Because _val_ was produced from JSON text and has not been modified, all of its property keys are Strings and will be exhaustively enumerated in source text order.
               1. Let _keys_ be ! EnumerableOwnProperties(_val_, ~key~).
               1. For each String _P_ of _keys_, do
                 1. Let _propertyDefinition_ be ~empty~.
