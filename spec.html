@@ -192,7 +192,7 @@ document.addEventListener("DOMContentLoaded", function() {
           _holder_: an Object,
           _name_: a String,
           _reviver_: a function object,
-          <ins>_parseRecord_: either a JSON Parse Record or *undefined*,</ins>
+          <ins>_parseRecord_: either a JSON Parse Record or ~empty~,</ins>
         ): either a normal completion containing an ECMAScript language value or a throw completion
       </h1>
       <dl class="header">
@@ -223,7 +223,7 @@ document.addEventListener("DOMContentLoaded", function() {
             1. Let _I_ be 0.
             1. Repeat, while _I_ &lt; _len_,
               1. Let _prop_ be ! ToString(𝔽(_I_)).
-              1. <ins>If _I_ &lt; _elementRecordsLen_, let _elementRecord_ be _elementRecords_[_I_]. Otherwise, let _elementRecord_ be *undefined*.</ins>
+              1. <ins>If _I_ &lt; _elementRecordsLen_, let _elementRecord_ be _elementRecords_[_I_]. Otherwise, let _elementRecord_ be ~empty~.</ins>
               1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _prop_, _reviver_<ins>, _elementRecord_</ins>).
               1. If _newElement_ is *undefined*, then
                 1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_prop_).
@@ -233,7 +233,7 @@ document.addEventListener("DOMContentLoaded", function() {
           1. Else,
             1. Let _keys_ be ? EnumerableOwnProperties(_val_, ~key~).
             1. For each String _P_ of _keys_, do
-              1. <ins>Let _entryRecord_ be the element of _entryRecords_ whose [[Key]] field is _P_. If there is no such element, let _entryRecord_ be *undefined*.</ins>
+              1. <ins>Let _entryRecord_ be the element of _entryRecords_ whose [[Key]] field is _P_. If there is no such element, let _entryRecord_ be ~empty~.</ins>
               1. Let _newElement_ be ? InternalizeJSONProperty(_val_, _P_, _reviver_<ins>, _entryRecord_</ins>).
               1. If _newElement_ is *undefined*, then
                 1. Perform ? <emu-meta effects="user-code">_val_.[[Delete]]</emu-meta>(_P_).
