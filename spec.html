@@ -165,16 +165,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 1. Set _I_ to _I_ + 1.
             1. Else,
               1. Assert: _typedValNode_ is an |ObjectLiteral| Parse Node.
-              1. Let _properties_ be PropertyDefinitionList of _typedValNode_.
+              1. Let _propertyNodes_ be PropertyDefinitionList of _typedValNode_.
               1. NOTE: Because _val_ was produced from JSON text and has not been modified, all of its property keys are Strings and will be exhaustively enumerated in source text order.
               1. Let _keys_ be ! EnumerableOwnProperties(_val_, ~key~).
               1. For each String _P_ of _keys_, do
-                1. Let _propertyDefinition_ be ~empty~.
-                1. For each Parse Node _candidate_ of _properties_, do
-                  1. Let _propName_ be PropName of _candidate_.
-                  1. If SameValue(_propName_, _P_) is *true*, set _propertyDefinition_ to _candidate_.
-                1. Assert: _propertyDefinition_ is not ~empty~.
                 1. NOTE: In the case of JSON text specifying multiple name/value pairs with the same name for a single object (such as <code>{"a":"lost","a":"kept"}</code>), the value for the corresponding property of the resulting ECMAScript object is specified by the last pair with that name.
+                1. Let _propertyDefinition_ be ~empty~.
+                1. For each Parse Node _propertyNode_ of _propertyNodes_, do
+                  1. Let _propName_ be PropName of _propertyNode_.
+                  1. If SameValue(_propName_, _P_) is *true*, set _propertyDefinition_ to _propertyNode_.
                 1. Assert: _propertyDefinition_ is <emu-grammar>PropertyDefinition : PropertyName `:` AssignmentExpression</emu-grammar>.
                 1. Let _propertyValueNode_ be the |AssignmentExpression| of _propertyDefinition_.
                 1. Let _entryParseRecord_ be CreateJSONParseRecord(_propertyValueNode_, _P_, ! Get(_val_, _P_)).
@@ -204,7 +203,7 @@ document.addEventListener("DOMContentLoaded", function() {
       <emu-alg>
         1. Let _val_ be ? Get(_holder_, _name_).
         1. <ins>Let _context_ be OrdinaryObjectCreate(%Object.prototype%).</ins>
-        1. <ins>If _parseRecord_ is a JSON Parse Record and SameValue(_val_, _parseRecord_.[[Value]]) is *true*, then</ins>
+        1. <ins>If _parseRecord_ is a JSON Parse Record and SameValue(_parseRecord_.[[Value]], _val_) is *true*, then</ins>
           1. <ins>If _val_ is not an Object, then</ins>
             1. <ins>Let _parseNode_ be _parseRecord_.[[ParseNode]].</ins>
             1. <ins>Assert: _parseNode_ is not an |ArrayLiteral| Parse Node and not an |ObjectLiteral| Parse Node.</ins>
