@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 1. Set _I_ to _I_ + 1.
             1. Else,
               1. Assert: _typedValNode_ is an |ObjectLiteral| Parse Node.
-              1. Let _propertyNodes_ be PropertyDefinitionList of _typedValNode_.
+              1. Let _propertyNodes_ be PropertyDefinitionNodes of _typedValNode_.
               1. NOTE: Because _val_ was produced from JSON text and has not been modified, all of its property keys are Strings and will be exhaustively enumerated in source text order.
               1. Let _keys_ be ! EnumerableOwnProperties(_val_, ~key~).
               1. For each String _P_ of _keys_, do
@@ -402,9 +402,9 @@ document.addEventListener("DOMContentLoaded", function() {
 </ins>
 
 <ins class="block">
-  <emu-clause id="sec-static-semantics-propertydefinitionlist" type="sdo">
+  <emu-clause id="sec-static-semantics-propertydefinitionnodes" type="sdo">
     <h1>
-      Static Semantics: PropertyDefinitionList (
+      Static Semantics: PropertyDefinitionNodes (
       ): a List of Parse Nodes
     </h1>
     <dl class="header">
@@ -422,7 +422,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     <emu-grammar>PropertyDefinitionList : PropertyDefinitionList `,` PropertyDefinition</emu-grammar>
     <emu-alg>
-      1. Return the list-concatenation of PropertyDefinitionList of |PropertyDefinitionList| and &laquo; |PropertyDefinition| &raquo;.
+      1. Return the list-concatenation of PropertyDefinitionNodes of |PropertyDefinitionList| and &laquo; |PropertyDefinition| &raquo;.
     </emu-alg>
   </emu-clause>
 </ins>
