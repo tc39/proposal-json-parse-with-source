@@ -271,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 1. If _type_ is |UnaryExpression|, then
                   1. Set _unaryExpression_ to _candidate_.
                 1. Else if _type_ is |NumericLiteral|, then
-                  1. Assert: _unaryExpression_ Contains _candidate_ is *true*.
+                  1. Assert: _candidate_ is contained within _unaryExpression_.
                   1. Return _unaryExpression_.
                 1. Else,
                   1. Return _candidate_.
