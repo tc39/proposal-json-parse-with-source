@@ -7,7 +7,7 @@ A proposal for extending `JSON.parse` behavior to grant reviver functions access
 [original 2018 September slides](https://docs.google.com/presentation/d/1PB0HCOxWZikFmTAqR5U2ZZjEiDV7NjhPN_-SK5NNG0w/edit?usp=sharing)
 
 ## Status
-This proposal is at stage 3 of [the TC39 Process](https://tc39.github.io/process-document/).
+This proposal is at stage 4 of [the TC39 Process](https://tc39.github.io/process-document/).
 
 ## Champions
 * Richard Gibson
@@ -79,6 +79,12 @@ expectedKeys.length === spiedKeys.length;
 expectedKeys.every((key, i) => spiedKeys[i] === key);
 // → true
 ```
+
+## Implementations
+* [JavaScriptCore](https://github.com/WebKit/WebKit/pull/7057)
+* [SpiderMonkey](https://bugzilla.mozilla.org/show_bug.cgi?id=1855468)
+* [V8](https://issues.chromium.org/issues/42202895)
+* [@ungap/raw-json](https://www.npmjs.com/package/@ungap/raw-json)
 
 ## Discussion
 ### Backwards Compatibility
